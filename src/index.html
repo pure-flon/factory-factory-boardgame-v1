@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎲 Board Game Collection — Game 1: Reversi</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #f7971e, #ffd200);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle { font-size: 0.9rem; color: #888; margin-bottom: 16px; }
+
+  .scoreboard {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 16px;
+    font-size: 1.1rem;
+  }
+  .score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+  }
+  .score.active {
+    border-color: #ffd200;
+    box-shadow: 0 0 12px rgba(255,210,0,0.3);
+  }
+  .disc-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .disc-icon.black { background: radial-gradient(circle at 35% 35%, #555, #111); }
+  .disc-icon.white { background: radial-gradient(circle at 35% 35%, #fff, #ccc); }
+
+  .status {
+    font-size: 1rem;
+    margin-bottom: 12px;
+    height: 28px;
+    color: #ffd200;
+  }
+
+  #board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    background: #1a5c2a;
+    border: 4px solid #0d3518;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .cell {
+    width: 56px; height: 56px;
+    background: #2d8a4e;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+  }
+  .cell:hover { background: #3a9e5e; }
+  .cell.valid-move::after {
+    content: '';
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: rgba(255,210,0,0.35);
+    position: absolute;
+  }
+  .cell .disc {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    transition: transform 0.4s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .disc.black {
+    background: radial-gradient(circle at 35% 35%, #555, #111);
+  }
+  .disc.white {
+    background: radial-gradient(circle at 35% 35%, #fff, #bbb);
+  }
+  .disc.flip {
+    animation: flipDisc 0.4s ease-in-out;
+  }
+  @keyframes flipDisc {
+    0%   { transform: scaleX(1); }
+    50%  { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+  }
+  .disc.place {
+    animation: placeDisc 0.3s ease-out;
+  }
+  @keyframes placeDisc {
+    0%   { transform: scale(0); opacity: 0; }
+    70%  { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .controls {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    color: #111;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,210,0,0.4); }
+  .btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: #e0e0e0;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+  .difficulty {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #888;
+  }
+  .difficulty select {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+    color: #e0e0e0;
+    border: 1px solid rgba(255,255,255,0.15);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 520px) {
+    .cell { width: 40px; height: 40px; }
+    .cell .disc { width: 30px; height: 30px; }
+    .cell.valid-move::after { width: 10px; height: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>♟ Reversi</h1>
+<p class="subtitle">보드게임 컬렉션 #1 — 오셀로</p>
+
+<div class="scoreboard">
+  <div class="score" id="score-black">
+    <span class="disc-icon black"></span>
+    <span>흑: <strong id="count-black">2</strong></span>
+  </div>
+  <div class="score" id="score-white">
+    <span class="disc-icon white"></span>
+    <span>백: <strong id="count-white">2</strong></span>
+  </div>
+</div>
+
+<div class="status" id="status">⚫ 흑 차례 (당신)</div>
+
+<div id="board"></div>
+
+<div class="controls">
+  <button class="btn btn-primary" onclick="newGame()">🔄 새 게임</button>
+  <button class="btn btn-secondary" onclick="undoMove()">↩ 되돌리기</button>
+</div>
+
+<div class="difficulty">
+  <label>AI 난이도:</label>
+  <select id="ai-level" onchange="newGame()">
+    <option value="1">🟢 Easy</option>
+    <option value="3" selected>🟡 Normal</option>
+    <option value="5">🔴 Hard</option>
+  </select>
+</div>
+
+<script>
+const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const BLACK = 1, WHITE = 2, EMPTY = 0;
+let board, currentPlayer, history, aiThinking;
+
+function init() {
+  board = Array.from({length:8}, () => Array(8).fill(EMPTY));
+  board[3][3] = WHITE; board[3][4] = BLACK;
+  board[4][3] = BLACK; board[4][4] = WHITE;
+  currentPlayer = BLACK;
+  history = [];
+  aiThinking = false;
+}
+
+function getFlips(b, r, c, player) {
+  if (b[r][c] !== EMPTY) return [];
+  const opp = player === BLACK ? WHITE : BLACK;
+  let allFlips = [];
+  for (const [dr, dc] of DIRS) {
+    let flips = [], nr = r+dr, nc = c+dc;
+    while (nr>=0 && nr<8 && nc>=0 && nc<8 && b[nr][nc] === opp) {
+      flips.push([nr, nc]);
+      nr += dr; nc += dc;
+    }
+    if (flips.length > 0 && nr>=0 && nr<8 && nc>=0 && nc<8 && b[nr][nc] === player) {
+      allFlips.push(...flips);
+    }
+  }
+  return allFlips;
+}
+
+function getValidMoves(b, player) {
+  let moves = [];
+  for (let r=0; r<8; r++)
+    for (let c=0; c<8; c++) {
+      const f = getFlips(b, r, c, player);
+      if (f.length > 0) moves.push({r, c, flips: f});
+    }
+  return moves;
+}
+
+function applyMove(b, r, c, player, flips) {
+  const nb = b.map(row => [...row]);
+  nb[r][c] = player;
+  for (const [fr, fc] of flips) nb[fr][fc] = player;
+  return nb;
+}
+
+function countDiscs(b) {
+  let black = 0, white = 0;
+  for (let r=0; r<8; r++)
+    for (let c=0; c<8; c++) {
+      if (b[r][c] === BLACK) black++;
+      else if (b[r][c] === WHITE) white++;
+    }
+  return {black, white};
+}
+
+// --- AI (minimax + alpha-beta) ---
+const WEIGHTS = [
+  [120,-20,20, 5, 5,20,-20,120],
+  [-20,-40,-5,-5,-5,-5,-40,-20],
+  [ 20, -5,15, 3, 3,15, -5, 20],
+  [  5, -5, 3, 3, 3, 3, -5,  5],
+  [  5, -5, 3, 3, 3, 3, -5,  5],
+  [ 20, -5,15, 3, 3,15, -5, 20],
+  [-20,-40,-5,-5,-5,-5,-40,-20],
+  [120,-20,20, 5, 5,20,-20,120]
+];
+
+function evaluate(b, player) {
+  const opp = player === BLACK ? WHITE : BLACK;
+  let score = 0;
+  // positional
+  for (let r=0; r<8; r++)
+    for (let c=0; c<8; c++) {
+      if (b[r][c] === player) score += WEIGHTS[r][c];
+      else if (b[r][c] === opp) score -= WEIGHTS[r][c];
+    }
+  // mobility
+  score += getValidMoves(b, player).length * 5;
+  score -= getValidMoves(b, opp).length * 5;
+  return score;
+}
+
+function minimax(b, depth, alpha, beta, maximizing, player) {
+  const opp = player === BLACK ? WHITE : BLACK;
+  const cur = maximizing ? player : opp;
+  const moves = getValidMoves(b, cur);
+
+  if (depth === 0 || moves.length === 0) {
+    if (moves.length === 0) {
+      const oppMoves = getValidMoves(b, cur === BLACK ? WHITE : BLACK);
+      if (oppMoves.length === 0) {
+        const {black, white} = countDiscs(b);
+        const diff = player === BLACK ? black - white : white - black;
+        return diff > 0 ? 10000 + diff : diff < 0 ? -10000 + diff : 0;
+      }
+    }
+    return evaluate(b, player);
+  }
+
+  if (maximizing) {
+    let maxEval = -Infinity;
+    for (const m of moves) {
+      const nb = applyMove(b, m.r, m.c, cur, m.flips);
+      const ev = minimax(nb, depth-1, alpha, beta, false, player);
+      maxEval = Math.max(maxEval, ev);
+      alpha = Math.max(alpha, ev);
+      if (beta <= alpha) break;
+    }
+    return maxEval;
+  } else {
+    let minEval = Infinity;
+    for (const m of moves) {
+      const nb = applyMove(b, m.r, m.c, cur, m.flips);
+      const ev = minimax(nb, depth-1, alpha, beta, true, player);
+      minEval = Math.min(minEval, ev);
+      beta = Math.min(beta, ev);
+      if (beta <= alpha) break;
+    }
+    return minEval;
+  }
+}
+
+function aiMove() {
+  const depth = parseInt(document.getElementById('ai-level').value);
+  const moves = getValidMoves(board, WHITE);
+  if (moves.length === 0) return null;
+
+  let bestScore = -Infinity, bestMove = moves[0];
+  for (const m of moves) {
+    const nb = applyMove(board, m.r, m.c, WHITE, m.flips);
+    const score = minimax(nb, depth-1, -Infinity, Infinity, false, WHITE);
+    if (score > bestScore) { bestScore = score; bestMove = m; }
+  }
+  return bestMove;
+}
+
+// --- Rendering ---
+function render() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  const validMoves = currentPlayer === BLACK ? getValidMoves(board, BLACK) : [];
+  const validSet = new Set(validMoves.map(m => `${m.r},${m.c}`));
+
+  for (let r=0; r<8; r++) {
+    for (let c=0; c<8; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (validSet.has(`${r},${c}`)) cell.classList.add('valid-move');
+      if (board[r][c] !== EMPTY) {
+        const disc = document.createElement('div');
+        disc.className = `disc ${board[r][c] === BLACK ? 'black' : 'white'}`;
+        cell.appendChild(disc);
+      }
+      cell.onclick = () => handleClick(r, c);
+      boardEl.appendChild(cell);
+    }
+  }
+
+  const {black, white} = countDiscs(board);
+  document.getElementById('count-black').textContent = black;
+  document.getElementById('count-white').textContent = white;
+  document.getElementById('score-black').classList.toggle('active', currentPlayer === BLACK);
+  document.getElementById('score-white').classList.toggle('active', currentPlayer === WHITE);
+}
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
+}
+
+function animateFlips(r, c, flips, player, callback) {
+  // Place disc
+  const idx = r * 8 + c;
+  const cells = document.querySelectorAll('.cell');
+  const disc = document.createElement('div');
+  disc.className = `disc ${player === BLACK ? 'black' : 'white'} place`;
+  cells[idx].appendChild(disc);
+
+  // Flip discs
+  setTimeout(() => {
+    for (const [fr, fc] of flips) {
+      const fi = fr * 8 + fc;
+      const fd = cells[fi].querySelector('.disc');
+      if (fd) {
+        fd.classList.add('flip');
+        setTimeout(() => {
+          fd.className = `disc ${player === BLACK ? 'black' : 'white'}`;
+        }, 200);
+      }
+    }
+    setTimeout(callback, 450);
+  }, 150);
+}
+
+function handleClick(r, c) {
+  if (aiThinking || currentPlayer !== BLACK) return;
+  const flips = getFlips(board, r, c, BLACK);
+  if (flips.length === 0) return;
+
+  history.push({board: board.map(r=>[...r]), player: currentPlayer});
+  animateFlips(r, c, flips, BLACK, () => {
+    board = applyMove(board, r, c, BLACK, flips);
+    currentPlayer = WHITE;
+    render();
+    checkGameState();
+  });
+}
+
+function doAiTurn() {
+  aiThinking = true;
+  setStatus('⚪ AI 생각 중...');
+  setTimeout(() => {
+    const move = aiMove();
+    if (!move) {
+      aiThinking = false;
+      currentPlayer = BLACK;
+      if (getValidMoves(board, BLACK).length === 0) {
+        endGame();
+      } else {
+        setStatus('⚫ 흑 차례 (AI 패스)');
+        render();
+      }
+      return;
+    }
+    animateFlips(move.r, move.c, move.flips, WHITE, () => {
+      board = applyMove(board, move.r, move.c, WHITE, move.flips);
+      currentPlayer = BLACK;
+      aiThinking = false;
+      render();
+      checkGameState();
+    });
+  }, 300);
+}
+
+function checkGameState() {
+  const blackMoves = getValidMoves(board, BLACK);
+  const whiteMoves = getValidMoves(board, WHITE);
+
+  if (currentPlayer === WHITE) {
+    if (whiteMoves.length === 0 && blackMoves.length === 0) {
+      endGame();
+    } else if (whiteMoves.length === 0) {
+      setStatus('⚫ 흑 차례 (AI 패스)');
+      currentPlayer = BLACK;
+      render();
+    } else {
+      doAiTurn();
+    }
+  } else {
+    if (blackMoves.length === 0 && whiteMoves.length === 0) {
+      endGame();
+    } else if (blackMoves.length === 0) {
+      setStatus('⚪ 백 차례 (당신 패스)');
+      currentPlayer = WHITE;
+      render();
+      doAiTurn();
+    } else {
+      setStatus('⚫ 흑 차례 (당신)');
+    }
+  }
+}
+
+function endGame() {
+  const {black, white} = countDiscs(board);
+  if (black > white) setStatus(`🎉 승리! 흑 ${black} vs 백 ${white}`);
+  else if (white > black) setStatus(`😢 패배... 흑 ${black} vs 백 ${white}`);
+  else setStatus(`🤝 무승부! ${black} vs ${white}`);
+}
+
+function newGame() {
+  init();
+  render();
+  setStatus('⚫ 흑 차례 (당신)');
+}
+
+function undoMove() {
+  if (history.length < 1 || aiThinking) return;
+  // Undo AI move + player move
+  if (history.length >= 2) {
+    history.pop(); // AI
+    const prev = history.pop(); // Player
+    board = prev.board;
+    currentPlayer = prev.player;
+  } else {
+    const prev = history.pop();
+    board = prev.board;
+    currentPlayer = prev.player;
+  }
+  render();
+  setStatus('⚫ 흑 차례 (당신)');
+}
+
+// Boot
+newGame();
+</script>
+</body>
+</html>
