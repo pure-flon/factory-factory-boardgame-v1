@@ -1,0 +1,81 @@
+name: CI + Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # ── CI: Python game logic tests ─────────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Smoke-test game engine
+        run: |
+          python3 -c "
+          import sys
+          sys.path.insert(0, '.')
+          from src.game.game_manager import GameManager
+          gm = GameManager()
+          gid = gm.start_game(2)
+          r = gm.play_turn(gid)
+          assert 'game_id' in r and 'player_id' in r and 'steps' in r
+          print('PASS: GameManager smoke test OK')
+          print('Turn result:', r)
+          "
+
+      - name: Full game loop test
+        run: |
+          python3 -c "
+          import sys
+          sys.path.insert(0, '.')
+          from src.game.game_manager import GameManager
+          gm = GameManager()
+          gid = gm.start_game(2)
+          winner = None
+          for _ in range(100):
+              r = gm.play_turn(gid)
+              if r['winner'] is not None:
+                  winner = r['winner']
+                  break
+          assert winner is not None, 'Game did not finish within 100 turns'
+          print(f'PASS: Full game loop — winner=Player {winner}')
+          "
+
+  # ── Deploy: GitHub Pages ─────────────────────────────────────────────────────
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

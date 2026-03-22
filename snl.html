@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Board Race — 20-Space Game | Board Game Collection</title>
+<meta name="description" content="Play Board Race — a fast 20-space dice racing game for 2 players. Simple, fun, free. No download required.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://pure-flon.com/snl.html">
+
+<!-- GA4 — same tag as index.html -->
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PLACEHOLDER"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PLACEHOLDER');
+</script>
+
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --p1: #4fc3f7;
+    --p2: #ffb74d;
+    --text: #e0e0e0;
+    --win: #69f0ae;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+  }
+  h1 {
+    font-size: 1.8rem;
+    color: var(--accent);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 20px; }
+
+  /* ── Board ── */
+  .board-wrap { width: 100%; max-width: 480px; }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .cell {
+    background: var(--card);
+    border-radius: 8px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: #666;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .cell.start  { border: 2px solid #4caf50; color: #4caf50; font-weight: 700; }
+  .cell.finish { border: 2px solid var(--accent); color: var(--accent); font-weight: 700; }
+  .cell-num { font-size: 0.65rem; position: absolute; top: 3px; left: 5px; color: #444; }
+  .tokens { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
+  .token {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    color: #111;
+  }
+  .token.p0 { background: var(--p1); }
+  .token.p1 { background: var(--p2); }
+
+  /* ── Players ── */
+  .players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .player-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 12px;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .player-card.active { border-color: var(--win); }
+  .player-card.p0 .player-name { color: var(--p1); }
+  .player-card.p1 .player-name { color: var(--p2); }
+  .player-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+  .player-info { font-size: 0.8rem; color: #aaa; }
+  .player-pos {
+    font-size: 1.5rem; font-weight: 700; color: var(--text);
+    margin-top: 4px;
+  }
+
+  /* ── Controls ── */
+  .controls { width: 100%; max-width: 480px; display: flex; gap: 10px; margin-bottom: 16px; }
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-roll  { background: var(--accent); color: #fff; }
+  .btn-reset { background: #333; color: #aaa; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Log ── */
+  .log-box {
+    width: 100%; max-width: 480px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .log-box h3 { font-size: 0.8rem; color: #666; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+  .log-entry { padding: 3px 0; border-bottom: 1px solid #1e2a3a; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-win { color: var(--win); font-weight: 700; }
+
+  /* ── Win overlay ── */
+  .win-banner {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .win-banner.show { display: flex; }
+  .win-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    border: 2px solid var(--win);
+    animation: pop 0.3s ease;
+  }
+  @keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .win-title { font-size: 2.5rem; margin-bottom: 8px; }
+  .win-sub { color: #aaa; margin-bottom: 24px; }
+  .win-btn { background: var(--win); color: #111; border: none; border-radius: 8px; padding: 12px 32px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h1>🎲 Board Race</h1>
+<p class="subtitle">20-space dice racing · First to space 19 wins</p>
+
+<div class="board-wrap">
+
+  <!-- Players -->
+  <div class="players">
+    <div class="player-card p0 active" id="card0">
+      <div class="player-name">🔵 Player 1</div>
+      <div class="player-info">Blue — your turn</div>
+      <div class="player-pos" id="pos0">0</div>
+    </div>
+    <div class="player-card p1" id="card1">
+      <div class="player-name">🟠 Player 2</div>
+      <div class="player-info">Orange</div>
+      <div class="player-pos" id="pos1">0</div>
+    </div>
+  </div>
+
+  <!-- Board grid (20 cells) -->
+  <div class="board" id="board"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-roll" id="btnRoll" onclick="rollTurn()">🎲 Roll Dice</button>
+    <button class="btn btn-reset" onclick="resetGame()">↺ Restart</button>
+  </div>
+
+  <!-- Log -->
+  <div class="log-box">
+    <h3>Game Log</h3>
+    <div id="log"></div>
+  </div>
+
+</div>
+
+<!-- Win overlay -->
+<div class="win-banner" id="winBanner">
+  <div class="win-card">
+    <div class="win-title" id="winTitle"></div>
+    <div class="win-sub">Reached space 19 first!</div>
+    <button class="win-btn" onclick="resetGame()">Play Again</button>
+  </div>
+</div>
+
+<script>
+// ── Game state (mirrors board.py + game_manager.py logic) ─────────────────
+const BOARD_SIZE = 20;
+
+const COLORS = ['p0', 'p1'];
+const NAMES  = ['Player 1', 'Player 2'];
+const EMOJIS = ['🔵', '🟠'];
+
+let positions    = [0, 0];
+let currentTurn  = 0;
+let winner       = null;
+let turnCount    = 0;
+
+// ── Dice (mirrors dice.py roll()) ─────────────────────────────────────────
+function roll(sides = 6) {
+  return Math.floor(Math.random() * sides) + 1;
+}
+
+// ── Board render ──────────────────────────────────────────────────────────
+function renderBoard() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (i === 0 ? ' start' : '') + (i === BOARD_SIZE - 1 ? ' finish' : '');
+    const num = document.createElement('span');
+    num.className = 'cell-num';
+    num.textContent = i === 0 ? 'S' : i === BOARD_SIZE - 1 ? 'F' : i;
+    cell.appendChild(num);
+
+    const tokens = document.createElement('div');
+    tokens.className = 'tokens';
+    [0, 1].forEach(pid => {
+      if (positions[pid] === i) {
+        const tok = document.createElement('div');
+        tok.className = 'token ' + COLORS[pid];
+        tok.textContent = pid + 1;
+        tokens.appendChild(tok);
+      }
+    });
+    cell.appendChild(tokens);
+    boardEl.appendChild(cell);
+  }
+}
+
+// ── Player cards ──────────────────────────────────────────────────────────
+function renderPlayers() {
+  [0, 1].forEach(pid => {
+    document.getElementById('pos' + pid).textContent = positions[pid];
+    const card = document.getElementById('card' + pid);
+    card.classList.toggle('active', pid === currentTurn && winner === null);
+    const info = card.querySelector('.player-info');
+    if (winner !== null) {
+      info.textContent = pid === winner ? '🏆 Winner!' : '';
+    } else {
+      info.textContent = pid === currentTurn ? 'Your turn →' : 'Waiting…';
+    }
+  });
+}
+
+// ── Log ───────────────────────────────────────────────────────────────────
+function addLog(msg, isWin = false) {
+  const log = document.getElementById('log');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry' + (isWin ? ' log-win' : '');
+  entry.textContent = msg;
+  log.prepend(entry);
+}
+
+// ── Roll turn (mirrors play_turn()) ───────────────────────────────────────
+function rollTurn() {
+  if (winner !== null) return;
+  const steps   = roll(6);
+  const pid     = currentTurn;
+  const oldPos  = positions[pid];
+  const newPos  = Math.min(oldPos + steps, BOARD_SIZE - 1);
+  positions[pid] = newPos;
+  turnCount++;
+
+  const isWin = newPos === BOARD_SIZE - 1;
+  if (isWin) {
+    winner = pid;
+    document.getElementById('btnRoll').disabled = true;
+  } else {
+    currentTurn = 1 - currentTurn;
+  }
+
+  const msg = isWin
+    ? `Turn ${turnCount}: ${EMOJIS[pid]} ${NAMES[pid]} rolled ${steps} → ${oldPos}→${newPos} 🏆 WIN!`
+    : `Turn ${turnCount}: ${EMOJIS[pid]} ${NAMES[pid]} rolled ${steps} → ${oldPos}→${newPos}`;
+  addLog(msg, isWin);
+
+  renderBoard();
+  renderPlayers();
+
+  if (isWin) {
+    gtag('event', 'game_win', { player: pid, turns: turnCount });
+    setTimeout(() => showWin(pid), 400);
+  } else {
+    gtag('event', 'dice_roll', { player: pid, steps, turn: turnCount });
+  }
+}
+
+function showWin(pid) {
+  document.getElementById('winTitle').textContent = `${EMOJIS[pid]} ${NAMES[pid]} Wins!`;
+  document.getElementById('winBanner').classList.add('show');
+}
+
+// ── Reset (mirrors start_game()) ──────────────────────────────────────────
+function resetGame() {
+  positions   = [0, 0];
+  currentTurn = 0;
+  winner      = null;
+  turnCount   = 0;
+  document.getElementById('btnRoll').disabled = false;
+  document.getElementById('winBanner').classList.remove('show');
+  document.getElementById('log').innerHTML = '';
+  addLog('New game started — Player 1 goes first.');
+  renderBoard();
+  renderPlayers();
+  gtag('event', 'game_start', { players: 2 });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+resetGame();
+</script>
+
+</body>
+</html>
