@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect 4 (사목) - Free 2-Player Board Game | Play Now</title>
+<meta name="description" content="Play Connect 4 (사목) online for free. Drop discs, connect four in a row — horizontally, vertically, or diagonally. 2-player local game, no download required.">
+<meta name="keywords" content="connect 4, connect four, 사목, 사목 게임, board game, strategy game, 보드게임, 2 player game, free game">
+<meta name="author" content="Board Game Collection">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://pure-flon.github.io/factory-factory-boardgame-v1/connect4.html">
+
+<!-- Open Graph / Social -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Connect 4 (사목) - Free 2-Player Board Game">
+<meta property="og:description" content="Drop discs, connect four in a row. Play Connect 4 online for free — no download, no signup.">
+<meta property="og:url" content="https://pure-flon.github.io/factory-factory-boardgame-v1/connect4.html">
+<meta property="og:site_name" content="Board Game Collection">
+<meta property="og:locale" content="ko_KR">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Connect 4 (사목) - Free 2-Player Board Game">
+<meta name="twitter:description" content="Drop discs and connect four in a row. Free browser game, no download.">
+
+<!-- PWA / Mobile -->
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- AdSense (activate after approval) -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
+<!-- GA4 (activate after setup) -->
+<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script> -->
+
+<!-- Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Connect 4",
+  "alternateName": "사목",
+  "description": "Drop discs into a 7-column grid and connect four in a row to win. Classic 2-player strategy game.",
+  "genre": ["Board Game", "Strategy"],
+  "gamePlatform": "Web Browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "inLanguage": ["ko", "en"],
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 2 }
+}
+</script>
+
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --p1: #ef5350;
+    --p1-glow: rgba(239,83,80,0.55);
+    --p2: #fdd835;
+    --p2-glow: rgba(253,216,53,0.55);
+    --board: #1565c0;
+    --board-dark: #0d47a1;
+    --empty: #1a1a2e;
+    --text: #e0e0e0;
+    --muted: #888;
+    --win: #69f0ae;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: 520px;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  header p.subtitle {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .breadcrumb {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .breadcrumb a { color: var(--muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--text); }
+
+  /* Score bar */
+  .scoreboard {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 14px;
+    width: 100%;
+    max-width: 520px;
+  }
+  .player-score {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 10px 22px;
+    text-align: center;
+    flex: 1;
+    max-width: 160px;
+    border: 2px solid transparent;
+    transition: border-color 0.25s, transform 0.15s;
+  }
+  .player-score.active { transform: scale(1.04); }
+  .player-score.p1-card.active { border-color: var(--p1); }
+  .player-score.p2-card.active { border-color: var(--p2); }
+  .player-score .disc-icon {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    margin: 0 auto 4px;
+  }
+  .player-score.p1-card .disc-icon { background: var(--p1); box-shadow: 0 0 8px var(--p1-glow); }
+  .player-score.p2-card .disc-icon { background: var(--p2); box-shadow: 0 0 8px var(--p2-glow); }
+  .player-score .label { font-size: 0.72rem; color: var(--muted); }
+  .player-score .score-num { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+  .player-score.p1-card .score-num { color: var(--p1); }
+  .player-score.p2-card .score-num { color: var(--p2); }
+
+  /* Status message */
+  #status {
+    font-size: 1rem;
+    font-weight: 600;
+    min-height: 28px;
+    margin-bottom: 10px;
+    text-align: center;
+    transition: color 0.2s;
+  }
+  #status.p1-turn { color: var(--p1); }
+  #status.p2-turn { color: var(--p2); }
+  #status.win-msg  { color: var(--win); font-size: 1.2rem; }
+  #status.draw-msg { color: var(--muted); }
+
+  /* Board wrapper */
+  .board-wrapper {
+    background: var(--board);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* Column hover arrows */
+  .col-arrows {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .arrow-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    color: rgba(255,255,255,0.3);
+    font-size: 1.1rem;
+  }
+  .arrow-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .arrow-btn:disabled { cursor: default; color: rgba(255,255,255,0.1); }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .cell {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--empty);
+    transition: background 0.18s, box-shadow 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .cell.p1 { background: var(--p1); box-shadow: 0 0 10px var(--p1-glow); }
+  .cell.p2 { background: var(--p2); box-shadow: 0 0 10px var(--p2-glow); }
+  .cell.win-cell { animation: pulse-win 0.7s ease-in-out infinite alternate; }
+  @keyframes pulse-win {
+    from { filter: brightness(1); transform: scale(1); }
+    to   { filter: brightness(1.5); transform: scale(1.08); }
+  }
+  /* Drop animation */
+  .cell.drop { animation: drop-in 0.22s cubic-bezier(0.33,1,0.68,1) forwards; }
+  @keyframes drop-in {
+    from { transform: scale(0.5) translateY(-30%); opacity: 0.6; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 9px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid #333; }
+
+  /* Rules */
+  .rules {
+    margin-top: 28px;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px 20px;
+    width: 100%;
+    max-width: 520px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .rules h2 { color: var(--text); font-size: 0.95rem; margin-bottom: 6px; }
+
+  /* Nav to other games */
+  .game-nav {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    width: 100%;
+    max-width: 520px;
+  }
+  .game-nav a { color: #888; text-decoration: underline; margin: 0 8px; }
+  .game-nav a:hover { color: var(--text); }
+
+  footer {
+    margin-top: 32px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="breadcrumb"><a href="/">🎮 Board Game Collection</a> › Connect 4</p>
+  <h1>Connect 4 · 사목</h1>
+  <p class="subtitle">Drop discs · Connect four in a row to win · 2 Players Local</p>
+</header>
+
+<div class="scoreboard">
+  <div class="player-score p1-card active" id="p1-card">
+    <div class="disc-icon"></div>
+    <div class="label">Player 1</div>
+    <div class="score-num" id="score-p1">0</div>
+  </div>
+  <div class="player-score p2-card" id="p2-card">
+    <div class="disc-icon"></div>
+    <div class="label">Player 2</div>
+    <div class="score-num" id="score-p2">0</div>
+  </div>
+</div>
+
+<div id="status" class="p1-turn">🔴 Player 1 차례</div>
+
+<div class="board-wrapper">
+  <div class="col-arrows" id="col-arrows">
+    <!-- 7 arrow buttons injected by JS -->
+  </div>
+  <div class="grid" id="grid">
+    <!-- 42 cells injected by JS -->
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-primary" id="restart-btn">🔄 새 게임</button>
+  <button class="btn btn-secondary" id="rematch-btn">↩ 재대결</button>
+</div>
+
+<div class="rules">
+  <h2>게임 방법</h2>
+  <p>7×6 격자판에 교대로 원판을 떨어뜨립니다. <strong>가로·세로·대각선</strong> 방향으로 4개를 먼저 연결하는 플레이어가 이깁니다. 열이 가득 차면 해당 열에 더 이상 놓을 수 없습니다.</p>
+</div>
+
+<div class="game-nav">
+  Other games: <a href="/">Reversi</a> · <a href="snl.html">Board Race</a>
+</div>
+
+<footer>© 2026 Board Game Collection · Free browser games · No download required</footer>
+
+<script>
+(() => {
+  const ROWS = 6, COLS = 7;
+  const board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+  let currentPlayer = 1;
+  let gameOver = false;
+  const scores = [0, 0, 0]; // index 1=P1, 2=P2
+
+  // DOM refs
+  const gridEl   = document.getElementById('grid');
+  const arrowsEl = document.getElementById('col-arrows');
+  const statusEl = document.getElementById('status');
+  const scoreEls = [null,
+    document.getElementById('score-p1'),
+    document.getElementById('score-p2')
+  ];
+  const p1card = document.getElementById('p1-card');
+  const p2card = document.getElementById('p2-card');
+
+  // Build cells
+  const cells = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+      gridEl.appendChild(cell);
+      cells.push(cell);
+    }
+  }
+
+  // Build arrow buttons
+  const arrowBtns = [];
+  for (let c = 0; c < COLS; c++) {
+    const btn = document.createElement('button');
+    btn.className = 'arrow-btn';
+    btn.innerHTML = '▼';
+    btn.dataset.col = c;
+    btn.setAttribute('aria-label', `열 ${c+1}에 놓기`);
+    btn.addEventListener('click', () => drop(c));
+    arrowsEl.appendChild(btn);
+    arrowBtns.push(btn);
+  }
+
+  function getCell(r, c) {
+    return cells[r * COLS + c];
+  }
+
+  function updateCell(r, c, player, animate) {
+    const el = getCell(r, c);
+    el.className = 'cell' + (player ? ` p${player}` : '') + (animate ? ' drop' : '');
+    if (animate) {
+      el.addEventListener('animationend', () => el.classList.remove('drop'), { once: true });
+    }
+  }
+
+  function updateStatus() {
+    if (gameOver) return;
+    const cl = currentPlayer === 1 ? 'p1-turn' : 'p2-turn';
+    const disc = currentPlayer === 1 ? '🔴' : '🟡';
+    statusEl.className = cl;
+    statusEl.textContent = `${disc} Player ${currentPlayer} 차례`;
+  }
+
+  function updateActiveCard() {
+    p1card.classList.toggle('active', currentPlayer === 1);
+    p2card.classList.toggle('active', currentPlayer === 2);
+  }
+
+  function setArrows(enabled) {
+    arrowBtns.forEach(btn => { btn.disabled = !enabled; });
+  }
+
+  // Find lowest empty row in column
+  function lowestRow(col) {
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (board[r][col] === 0) return r;
+    }
+    return -1;
+  }
+
+  function drop(col) {
+    if (gameOver) return;
+    const row = lowestRow(col);
+    if (row < 0) return; // column full
+    board[row][col] = currentPlayer;
+    updateCell(row, col, currentPlayer, true);
+
+    // Disable column arrow if full
+    if (lowestRow(col) < 0) arrowBtns[col].disabled = true;
+
+    const winCells = checkWin(row, col, currentPlayer);
+    if (winCells) {
+      highlightWin(winCells);
+      scores[currentPlayer]++;
+      scoreEls[currentPlayer].textContent = scores[currentPlayer];
+      const disc = currentPlayer === 1 ? '🔴' : '🟡';
+      statusEl.className = 'win-msg';
+      statusEl.textContent = `${disc} Player ${currentPlayer} 승리! 🎉`;
+      gameOver = true;
+      setArrows(false);
+      return;
+    }
+    if (isDraw()) {
+      statusEl.className = 'draw-msg';
+      statusEl.textContent = '😐 무승부! 모든 칸이 가득 찼습니다.';
+      gameOver = true;
+      setArrows(false);
+      return;
+    }
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+    updateStatus();
+    updateActiveCard();
+  }
+
+  function isDraw() {
+    return board[0].every(v => v !== 0);
+  }
+
+  // Returns winning cells array or null
+  function checkWin(row, col, player) {
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr, dc] of dirs) {
+      const line = [[row, col]];
+      for (let s = 1; s <= 3; s++) {
+        const r2 = row + dr*s, c2 = col + dc*s;
+        if (r2 >= 0 && r2 < ROWS && c2 >= 0 && c2 < COLS && board[r2][c2] === player)
+          line.push([r2, c2]);
+        else break;
+      }
+      for (let s = 1; s <= 3; s++) {
+        const r2 = row - dr*s, c2 = col - dc*s;
+        if (r2 >= 0 && r2 < ROWS && c2 >= 0 && c2 < COLS && board[r2][c2] === player)
+          line.push([r2, c2]);
+        else break;
+      }
+      if (line.length >= 4) return line;
+    }
+    return null;
+  }
+
+  function highlightWin(winCells) {
+    for (const [r, c] of winCells) {
+      getCell(r, c).classList.add('win-cell');
+    }
+  }
+
+  function resetBoard(keepScores) {
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++) {
+        board[r][c] = 0;
+        updateCell(r, c, 0, false);
+      }
+    if (!keepScores) {
+      scores[1] = 0; scores[2] = 0;
+      scoreEls[1].textContent = '0';
+      scoreEls[2].textContent = '0';
+    }
+    currentPlayer = 1;
+    gameOver = false;
+    setArrows(true);
+    updateStatus();
+    updateActiveCard();
+  }
+
+  document.getElementById('restart-btn').addEventListener('click', () => resetBoard(false));
+  document.getElementById('rematch-btn').addEventListener('click', () => resetBoard(true));
+
+  // Keyboard: 1-7 to drop in column
+  document.addEventListener('keydown', e => {
+    const n = parseInt(e.key);
+    if (n >= 1 && n <= 7) drop(n - 1);
+  });
+
+  // Init
+  updateStatus();
+  updateActiveCard();
+})();
+</script>
+</body>
+</html>
