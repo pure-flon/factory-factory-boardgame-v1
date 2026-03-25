@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://pure-flon.com/</loc>
-    <lastmod>2026-03-24</lastmod>
+    <loc>https://pure-flon.com/factory-factory-boardgame-v1/</loc>
+    <lastmod>2026-03-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://pure-flon.com/minesweeper.html</loc>
-    <lastmod>2026-03-24</lastmod>
+    <loc>https://pure-flon.com/factory-factory-boardgame-v1/connect4.html</loc>
+    <lastmod>2026-03-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://pure-flon.com/connect4.html</loc>
-    <lastmod>2026-03-21</lastmod>
+    <loc>https://pure-flon.com/factory-factory-boardgame-v1/minesweeper.html</loc>
+    <lastmod>2026-03-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://pure-flon.com/snl.html</loc>
-    <lastmod>2026-03-21</lastmod>
+    <loc>https://pure-flon.com/factory-factory-boardgame-v1/snl.html</loc>
+    <lastmod>2026-03-25</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>

@@ -1,0 +1,43 @@
+{
+  "name": "Board Game Collection",
+  "short_name": "BoardGames",
+  "description": "Free online board games — Reversi, Connect 4, Minesweeper, Board Race. No download required.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#302b63",
+  "orientation": "portrait-primary",
+  "categories": ["games", "entertainment"],
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Reversi",
+      "url": "./",
+      "description": "Play Reversi (Othello) against AI"
+    },
+    {
+      "name": "Connect 4",
+      "url": "./connect4.html",
+      "description": "Play Connect 4 (사목)"
+    },
+    {
+      "name": "Minesweeper",
+      "url": "./minesweeper.html",
+      "description": "Play Minesweeper (지뢰찾기)"
+    }
+  ]
+}
