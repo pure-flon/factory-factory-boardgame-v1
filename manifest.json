@@ -38,6 +38,11 @@
       "name": "Minesweeper",
       "url": "./minesweeper.html",
       "description": "Play Minesweeper (지뢰찾기)"
+    },
+    {
+      "name": "Checkers",
+      "url": "./checkers.html",
+      "description": "Play Checkers (체커) — king promotion & mandatory captures"
     }
   ]
 }

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkers (체커) - Free Classic Board Game | Play Now</title>
+<meta name="description" content="Play classic Checkers (체커) online for free. Drag to move, jump to capture, crown your kings. 2-player local game, no download required.">
+<meta name="keywords" content="checkers, draughts, 체커, 체커 게임, board game, strategy game, 보드게임, 2 player game, free game, classic game">
+<meta name="author" content="Board Game Collection">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://pure-flon.com/factory-factory-boardgame-v1/checkers.html">
+
+<!-- Open Graph / Social -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Checkers (체커) - Free Classic Board Game">
+<meta property="og:description" content="Jump, capture, and crown your kings. Play classic Checkers online for free — no download, no signup.">
+<meta property="og:url" content="https://pure-flon.com/factory-factory-boardgame-v1/checkers.html">
+<meta property="og:site_name" content="Board Game Collection">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://pure-flon.com/factory-factory-boardgame-v1/icons/icon.svg">
+<meta property="og:image:alt" content="Board Game Collection icon">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Checkers (체커) - Free Classic Board Game">
+<meta name="twitter:description" content="Classic Checkers with king promotion and mandatory captures. Free browser game, no download.">
+<meta name="twitter:image" content="https://pure-flon.com/factory-factory-boardgame-v1/icons/icon.svg">
+
+<!-- PWA / Mobile -->
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+
+<!-- AdSense (activate after approval) -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
+<!-- GA4 (activate after setup) -->
+<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script> -->
+
+<!-- Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Checkers",
+  "alternateName": "체커",
+  "description": "Classic Checkers board game. Move diagonally, jump over opponents to capture, promote to King. 2-player local game.",
+  "genre": ["Board Game", "Strategy"],
+  "gamePlatform": "Web Browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "inLanguage": ["ko", "en"],
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 2 }
+}
+</script>
+
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --accent-red: #e94560;
+    --accent-black: #4a9eff;
+    --text: #e0e0e0;
+    --muted: #888;
+    --dark-sq: #2a3a5e;
+    --light-sq: #0d1b35;
+    --border: #0f3460;
+    --valid: rgba(100, 220, 100, 0.35);
+    --selected: rgba(255, 210, 0, 0.5);
+    --king-glow-red: rgba(233, 69, 96, 0.7);
+    --king-glow-blue: rgba(74, 158, 255, 0.7);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px 24px;
+  }
+
+  /* Nav */
+  .nav {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    justify-content: center;
+  }
+  .nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .nav a:hover, .nav a.current {
+    color: var(--text);
+    border-color: var(--accent-red);
+    background: rgba(233,69,96,0.1);
+  }
+
+  h1 {
+    font-size: 1.7rem;
+    margin-bottom: 4px;
+    background: linear-gradient(90deg, var(--accent-red), #ff8c42);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
+
+  /* Scoreboard */
+  .scoreboard {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+  }
+  .score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 18px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+    font-size: 1rem;
+  }
+  .score.active {
+    border-color: #ffd200;
+    box-shadow: 0 0 14px rgba(255,210,0,0.3);
+    background: rgba(255,210,0,0.06);
+  }
+  .dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .dot.red { background: var(--accent-red); }
+  .dot.blue { background: var(--accent-black); }
+  .count { font-weight: 700; font-size: 1.1rem; }
+
+  /* Status */
+  #status {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    min-height: 1.4em;
+    text-align: center;
+    transition: color 0.3s;
+  }
+  #status.warn { color: #ffd200; }
+  #status.win  { color: #64e664; font-weight: 700; font-size: 1rem; }
+
+  /* Board wrapper */
+  .board-wrap {
+    position: relative;
+    touch-action: none;
+    user-select: none;
+  }
+
+  /* Board */
+  #board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    width: min(96vw, 480px);
+    height: min(96vw, 480px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    position: relative;
+    transition: background 0.1s;
+  }
+  .cell.dark { background: var(--dark-sq); cursor: pointer; }
+  .cell.light { background: var(--light-sq); }
+  .cell.dark:hover { background: #3a4a6e; }
+  .cell.selected { background: var(--selected) !important; }
+  .cell.valid-move { background: var(--valid) !important; }
+  .cell.valid-move::after {
+    content: '';
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    background: rgba(100,220,100,0.6);
+    position: absolute;
+  }
+
+  /* Pieces */
+  .piece {
+    width: 72%;
+    height: 72%;
+    border-radius: 50%;
+    position: relative;
+    cursor: grab;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 3px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  .piece:active { cursor: grabbing; transform: scale(1.05); }
+  .piece.red {
+    background: radial-gradient(circle at 35% 35%, #ff7a94, var(--accent-red), #8b1a2e);
+    box-shadow: 0 3px 8px rgba(233,69,96,0.5), inset 0 1px 2px rgba(255,255,255,0.2);
+  }
+  .piece.blue {
+    background: radial-gradient(circle at 35% 35%, #7bbfff, var(--accent-black), #1a3a7a);
+    box-shadow: 0 3px 8px rgba(74,158,255,0.5), inset 0 1px 2px rgba(255,255,255,0.2);
+  }
+  .piece.king::after {
+    content: '♛';
+    position: absolute;
+    font-size: 0.55em;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .piece.king.red { box-shadow: 0 3px 12px var(--king-glow-red), inset 0 1px 2px rgba(255,255,255,0.3); }
+  .piece.king.blue { box-shadow: 0 3px 12px var(--king-glow-blue), inset 0 1px 2px rgba(255,255,255,0.3); }
+
+  /* Dragging ghost */
+  .piece.dragging { opacity: 0.4; transform: scale(0.9); }
+  .drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    transform: translate(-50%, -50%);
+    border: 3px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+  }
+  .drag-ghost.red {
+    background: radial-gradient(circle at 35% 35%, #ff7a94, var(--accent-red), #8b1a2e);
+    box-shadow: 0 6px 20px rgba(233,69,96,0.7);
+  }
+  .drag-ghost.blue {
+    background: radial-gradient(circle at 35% 35%, #7bbfff, var(--accent-black), #1a3a7a);
+    box-shadow: 0 6px 20px rgba(74,158,255,0.7);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    padding: 9px 22px;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .btn-primary {
+    background: var(--accent-red);
+    color: white;
+  }
+  .btn-primary:hover { background: #c73652; transform: translateY(-1px); }
+  .btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.14); transform: translateY(-1px); }
+
+  /* Rules */
+  .rules {
+    margin-top: 20px;
+    max-width: 480px;
+    width: 100%;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .rules h3 { color: var(--text); margin-bottom: 6px; font-size: 0.9rem; }
+  .rules ul { padding-left: 16px; }
+  .rules li { margin-bottom: 2px; }
+
+  /* Toast overlay */
+  #toast {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #toast.show { display: flex; }
+  .toast-box {
+    background: var(--card);
+    border: 2px solid #ffd200;
+    border-radius: 16px;
+    padding: 28px 36px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+  .toast-box h2 { font-size: 1.6rem; margin-bottom: 8px; color: #ffd200; }
+  .toast-box p  { color: var(--muted); margin-bottom: 18px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="./">Reversi</a>
+  <a href="connect4.html">Connect 4</a>
+  <a href="minesweeper.html">Minesweeper</a>
+  <a href="snl.html">Board Race</a>
+  <a href="checkers.html" class="current">Checkers ✓</a>
+</nav>
+
+<h1>Checkers (체커)</h1>
+<p class="subtitle">2-Player · Classic · King Promotion · Mandatory Capture</p>
+
+<div class="scoreboard">
+  <div class="score" id="score-red">
+    <div class="dot red"></div>
+    <span>Red</span>
+    <span class="count" id="count-red">12</span>
+  </div>
+  <div class="score" id="score-blue">
+    <div class="dot blue"></div>
+    <span>Blue</span>
+    <span class="count" id="count-blue">12</span>
+  </div>
+</div>
+
+<div id="status">Red's turn — tap a piece to select</div>
+
+<div class="board-wrap">
+  <div id="board"></div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-primary" onclick="initGame()">New Game</button>
+  <button class="btn btn-secondary" id="btn-rules" onclick="toggleRules()">Rules</button>
+</div>
+
+<div class="rules" id="rules-panel" style="display:none;">
+  <h3>How to Play</h3>
+  <ul>
+    <li>Red moves up, Blue moves down (diagonally on dark squares).</li>
+    <li>Jump over an opponent's piece to capture it. <b>Captures are mandatory</b> if available.</li>
+    <li>After a capture, you may continue jumping (multi-jump).</li>
+    <li>Reach the last row to promote to <b>King (♛)</b> — kings move in all 4 directions.</li>
+    <li>Win by capturing all opponent pieces or leaving them with no moves.</li>
+  </ul>
+</div>
+
+<!-- Win toast -->
+<div id="toast">
+  <div class="toast-box">
+    <h2 id="toast-title">🎉 Red Wins!</h2>
+    <p id="toast-sub">All opponent pieces captured.</p>
+    <button class="btn btn-primary" onclick="initGame(); document.getElementById('toast').classList.remove('show')">Play Again</button>
+  </div>
+</div>
+
+<script>
+const ROWS = 8, COLS = 8;
+
+let board = [];          // [row][col]: null | {color:'red'|'blue', king:bool}
+let currentPlayer = 'red';
+let selected = null;     // {row, col} | null
+let validMoves = [];     // [{row, col, captured:[{row,col}]}]
+let gameOver = false;
+let multiJumpCell = null;// {row, col} during forced multi-jump
+
+// Drag state
+let dragSrc = null;      // {row, col}
+let dragGhost = null;    // DOM element
+
+// ─── Init ───────────────────────────────────────────
+function initGame() {
+  board = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if ((r + c) % 2 === 1) board[r][c] = {color: 'blue', king: false};
+    }
+  }
+  for (let r = 5; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if ((r + c) % 2 === 1) board[r][c] = {color: 'red', king: false};
+    }
+  }
+  currentPlayer = 'red';
+  selected = null;
+  validMoves = [];
+  gameOver = false;
+  multiJumpCell = null;
+  document.getElementById('toast').classList.remove('show');
+  render();
+  updateStatus();
+}
+
+// ─── Logic ──────────────────────────────────────────
+function isOnBoard(r, c) { return r >= 0 && r < ROWS && c >= 0 && c < COLS; }
+
+function getDirs(piece) {
+  if (piece.king) return [[-1,-1],[-1,1],[1,-1],[1,1]];
+  return piece.color === 'red' ? [[-1,-1],[-1,1]] : [[1,-1],[1,1]];
+}
+
+function getCaptures(r, c, tmpBoard) {
+  const b = tmpBoard || board;
+  const piece = b[r][c];
+  if (!piece) return [];
+  const result = [];
+  for (const [dr, dc] of getDirs(piece)) {
+    const mr = r + dr, mc = c + dc;
+    const lr = r + 2*dr, lc = c + 2*dc;
+    if (isOnBoard(mr, mc) && isOnBoard(lr, lc) &&
+        b[mr][mc] && b[mr][mc].color !== piece.color &&
+        b[lr][lc] === null) {
+      result.push({row: lr, col: lc, captured: [{row: mr, col: mc}]});
+    }
+  }
+  return result;
+}
+
+function hasMandatoryCapture(player) {
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c] && board[r][c].color === player && getCaptures(r, c).length > 0)
+        return true;
+  return false;
+}
+
+function getMovesFor(r, c) {
+  const piece = board[r][c];
+  if (!piece || piece.color !== currentPlayer) return [];
+  if (multiJumpCell && (multiJumpCell.row !== r || multiJumpCell.col !== c)) return [];
+
+  const mustCapture = multiJumpCell ? true : hasMandatoryCapture(currentPlayer);
+  if (mustCapture) return getCaptures(r, c);
+
+  // Regular moves
+  const moves = [];
+  for (const [dr, dc] of getDirs(piece)) {
+    const nr = r + dr, nc = c + dc;
+    if (isOnBoard(nr, nc) && board[nr][nc] === null)
+      moves.push({row: nr, col: nc, captured: []});
+  }
+  return moves;
+}
+
+function applyMove(fromR, fromC, move) {
+  const piece = {...board[fromR][fromC]};
+  board[fromR][fromC] = null;
+  for (const cap of move.captured) board[cap.row][cap.col] = null;
+  board[move.row][move.col] = piece;
+
+  // King promotion
+  if (piece.color === 'red'  && move.row === 0) piece.king = true;
+  if (piece.color === 'blue' && move.row === 7) piece.king = true;
+  board[move.row][move.col] = piece;
+
+  // Check for multi-jump (only after capture)
+  if (move.captured.length > 0) {
+    const further = getCaptures(move.row, move.col);
+    if (further.length > 0) {
+      multiJumpCell = {row: move.row, col: move.col};
+      selected = multiJumpCell;
+      validMoves = further;
+      render();
+      updateStatus('Must continue jumping!');
+      return;
+    }
+  }
+
+  // End turn
+  multiJumpCell = null;
+  selected = null;
+  validMoves = [];
+  currentPlayer = currentPlayer === 'red' ? 'blue' : 'red';
+  checkEnd();
+  render();
+  updateStatus();
+}
+
+function checkEnd() {
+  // Check if current player has any valid moves
+  const mustCapture = hasMandatoryCapture(currentPlayer);
+  let hasMove = false;
+  for (let r = 0; r < ROWS && !hasMove; r++) {
+    for (let c = 0; c < COLS && !hasMove; c++) {
+      if (board[r][c] && board[r][c].color === currentPlayer) {
+        const mvs = mustCapture ? getCaptures(r, c) : [];
+        if (mustCapture) { if (mvs.length > 0) hasMove = true; }
+        else {
+          for (const [dr, dc] of getDirs(board[r][c])) {
+            const nr = r + dr, nc = c + dc;
+            if (isOnBoard(nr, nc) && board[nr][nc] === null) { hasMove = true; break; }
+          }
+          if (getCaptures(r, c).length > 0) hasMove = true;
+        }
+      }
+    }
+  }
+  if (!hasMove) {
+    gameOver = true;
+    const winner = currentPlayer === 'red' ? 'Blue' : 'Red';
+    const winnerKo = winner === 'Red' ? '빨강' : '파랑';
+    setTimeout(() => {
+      document.getElementById('toast-title').textContent = `🎉 ${winner} Wins!`;
+      document.getElementById('toast-sub').textContent = `${winnerKo} 승리 — 상대 기물을 모두 막았습니다.`;
+      document.getElementById('toast').classList.add('show');
+    }, 300);
+  }
+}
+
+// ─── Click handling ──────────────────────────────────
+function onCellClick(r, c) {
+  if (gameOver) return;
+  if ((r + c) % 2 === 0) return; // light square, ignore
+
+  // If a valid move destination is clicked
+  if (selected) {
+    const move = validMoves.find(m => m.row === r && m.col === c);
+    if (move) { applyMove(selected.row, selected.col, move); return; }
+  }
+
+  // Select a piece
+  if (board[r][c] && board[r][c].color === currentPlayer) {
+    if (multiJumpCell && (multiJumpCell.row !== r || multiJumpCell.col !== c)) return;
+    selected = {row: r, col: c};
+    validMoves = getMovesFor(r, c);
+    render();
+  } else {
+    selected = null;
+    validMoves = [];
+    render();
+  }
+}
+
+// ─── Drag & Drop ─────────────────────────────────────
+function onPieceDragStart(e, r, c) {
+  if (gameOver) return;
+  if (!board[r][c] || board[r][c].color !== currentPlayer) return;
+  if (multiJumpCell && (multiJumpCell.row !== r || multiJumpCell.col !== c)) return;
+  e.preventDefault();
+  dragSrc = {row: r, col: c};
+  selected = dragSrc;
+  validMoves = getMovesFor(r, c);
+
+  const piece = board[r][c];
+  const ghost = document.createElement('div');
+  ghost.className = `drag-ghost ${piece.color}`;
+  if (piece.king) ghost.textContent = '♛';
+  ghost.style.left = (e.clientX || e.touches[0].clientX) + 'px';
+  ghost.style.top  = (e.clientY || e.touches[0].clientY) + 'px';
+  document.body.appendChild(ghost);
+  dragGhost = ghost;
+  render();
+}
+
+function onDragMove(e) {
+  if (!dragGhost) return;
+  e.preventDefault();
+  const x = e.clientX || (e.touches && e.touches[0].clientX);
+  const y = e.clientY || (e.touches && e.touches[0].clientY);
+  dragGhost.style.left = x + 'px';
+  dragGhost.style.top  = y + 'px';
+}
+
+function onDragEnd(e) {
+  if (!dragGhost || !dragSrc) { cleanDrag(); return; }
+  e.preventDefault();
+  const x = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
+  const y = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+  cleanDrag();
+
+  // Find cell under drop point
+  const el = document.elementFromPoint(x, y);
+  if (!el) return;
+  const cell = el.closest('[data-row]') || el;
+  const dr = parseInt(cell.dataset.row);
+  const dc = parseInt(cell.dataset.col);
+  if (isNaN(dr) || isNaN(dc)) { selected = null; validMoves = []; render(); return; }
+
+  const move = validMoves.find(m => m.row === dr && m.col === dc);
+  if (move) {
+    applyMove(dragSrc.row, dragSrc.col, move);
+  } else {
+    selected = null;
+    validMoves = [];
+    render();
+  }
+  dragSrc = null;
+}
+
+function cleanDrag() {
+  if (dragGhost) { dragGhost.remove(); dragGhost = null; }
+}
+
+// ─── Render ──────────────────────────────────────────
+function render() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  const validSet = new Set(validMoves.map(m => `${m.row},${m.col}`));
+  let countRed = 0, countBlue = 0;
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement('div');
+      const isDark = (r + c) % 2 === 1;
+      cell.className = `cell ${isDark ? 'dark' : 'light'}`;
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+
+      if (selected && selected.row === r && selected.col === c) cell.classList.add('selected');
+      else if (isDark && validSet.has(`${r},${c}`)) cell.classList.add('valid-move');
+
+      if (board[r][c]) {
+        const p = board[r][c];
+        if (p.color === 'red') countRed++; else countBlue++;
+
+        const piece = document.createElement('div');
+        piece.className = `piece ${p.color}${p.king ? ' king' : ''}`;
+        piece.dataset.row = r;
+        piece.dataset.col = c;
+        if (dragSrc && dragSrc.row === r && dragSrc.col === c) piece.classList.add('dragging');
+        if (p.king) piece.textContent = '♛';
+
+        // Click
+        piece.addEventListener('click', (e) => { e.stopPropagation(); onCellClick(r, c); });
+        // Mouse drag
+        piece.addEventListener('mousedown', (e) => onPieceDragStart(e, r, c));
+        // Touch drag
+        piece.addEventListener('touchstart', (e) => onPieceDragStart(e, r, c), {passive: false});
+
+        cell.appendChild(piece);
+      }
+
+      cell.addEventListener('click', () => onCellClick(r, c));
+      boardEl.appendChild(cell);
+    }
+  }
+
+  document.getElementById('count-red').textContent  = countRed;
+  document.getElementById('count-blue').textContent = countBlue;
+  document.getElementById('score-red').classList.toggle('active',  !gameOver && currentPlayer === 'red');
+  document.getElementById('score-blue').classList.toggle('active', !gameOver && currentPlayer === 'blue');
+}
+
+function updateStatus(override) {
+  const el = document.getElementById('status');
+  el.className = '';
+  if (override) { el.textContent = override; el.className = 'warn'; return; }
+  if (gameOver) { el.className = 'win'; el.textContent = 'Game Over!'; return; }
+
+  const mustCapture = multiJumpCell ? false : hasMandatoryCapture(currentPlayer);
+  const player = currentPlayer === 'red' ? 'Red' : 'Blue';
+  const playerKo = currentPlayer === 'red' ? '빨강' : '파랑';
+  if (mustCapture) {
+    el.className = 'warn';
+    el.textContent = `${player}(${playerKo}) — 캡처 필수! (tap the jumping piece)`;
+  } else if (selected) {
+    el.textContent = `${player}(${playerKo}) — tap a highlighted square to move`;
+  } else {
+    el.textContent = `${player}(${playerKo})'s turn — tap a piece to select`;
+  }
+}
+
+// ─── Rules toggle ────────────────────────────────────
+function toggleRules() {
+  const panel = document.getElementById('rules-panel');
+  const btn = document.getElementById('btn-rules');
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  btn.textContent = show ? 'Hide Rules' : 'Rules';
+}
+
+// ─── Global drag listeners ────────────────────────────
+document.addEventListener('mousemove', onDragMove);
+document.addEventListener('touchmove', onDragMove, {passive: false});
+document.addEventListener('mouseup',  onDragEnd);
+document.addEventListener('touchend', onDragEnd, {passive: false});
+
+// ─── Start ───────────────────────────────────────────
+initGame();
+</script>
+</body>
+</html>
