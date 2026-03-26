@@ -1,7 +1,7 @@
 {
   "name": "Board Game Collection",
   "short_name": "BoardGames",
-  "description": "Free online board games — Reversi, Connect 4, Minesweeper, Board Race. No download required.",
+  "description": "Free online board games — Reversi, Connect 4, Minesweeper, Board Race, Checkers, Tic-Tac-Toe. No download required.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#1a1a2e",
@@ -43,6 +43,11 @@
       "name": "Checkers",
       "url": "./checkers.html",
       "description": "Play Checkers (체커) — king promotion & mandatory captures"
+    },
+    {
+      "name": "Tic-Tac-Toe",
+      "url": "./tictactoe.html",
+      "description": "Play Tic-Tac-Toe (틱택토) — perfect AI with minimax"
     }
   ]
 }
